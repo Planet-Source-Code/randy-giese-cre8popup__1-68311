@@ -1,0 +1,206 @@
+<HTML><HEAD><Title>Cre8Popup</Title>
+<BODY ALink="Yellow" BGColor="#000000" Link="White" Text="#FFFFFF" VLink="SpringGreen">
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<!-- +++++                                                            +++++ -->
+<!-- +++++                         Begin HTML                         +++++ -->
+<!-- +++++                                                            +++++ -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<Div Align="Center">
+
+<P><FONT Face="Times New Roman" SIZE="9" COLOR="Red"><STRONG>
+Cre8Popup
+</P></Div>
+
+<HR ALIGN=CENTER WIDTH="100%" SIZE="2" NOSHADE COLOR="Magenta"></HR>
+
+<Font Size="4" Color="SpringGreen"><B><BR>
+
+ &nbsp  &nbsp  &nbsp I struggled with PopUp Menus because I was not able to find very good documentation. &nbsp I found examples on PSC and elsewhere but they seemed too limited, as well as complex and difficult, to relate to my own coding. &nbsp So I decided to dig into it and was able to come up with this brief Tutorial. &nbsp I hope you find it helpful... <BR><BR>
+
+ &nbsp &nbsp &nbsp Version 1.0.1. &nbsp (Apr 22, 2007) <BR>
+I added more comments and improved a couple others, but more importantly, I replaced the confusing <Font Color="Yellow"> lngMenu <Font Color="SpringGreen"> array with more meaningful names. &nbsp It should be less confusing. &nbsp I also added more Menus, including a Sub_Menu that uses <Font Color="Yellow"> Check-Boxes<Font Color="SpringGreen">. <BR><BR>
+
+ &nbsp &nbsp &nbsp Version 1.0.2. &nbsp (May 16, 2007) <BR>
+I made a huge change to the <Font Color="Yellow"> Check-Box <Font Color="SpringGreen"> Menu. &nbsp Please see the extensive comments in the code for further details. <BR><BR>
+
+ &nbsp &nbsp &nbsp Start <Font Color="Yellow"> Visual Basic <Font Color="SpringGreen"> and select <Font Color="Yellow"> Standard Exe<Font Color="SpringGreen">, then copy and paste all the <Font Color="Cyan"> Blue <Font Color="SpringGreen"> lines below. &nbsp Press <Font Color="Yellow"> Cntl + F5 <Font Color="SpringGreen"> to run the app. &nbsp Click a button inside the form and you will see your new PopUp Menu. <BR><BR>
+
+ &nbsp &nbsp &nbsp You may open the file called <Font Color="Yellow"> Cre8Popup.Vbp <Font Color="SpringGreen"> rather than do all the copying. &nbsp It is the same program but with much more commenting. <BR><BR>
+
+Randy Giese<BR><BR>
+
+<HR ALIGN=CENTER WIDTH="100%" SIZE="2" NOSHADE COLOR="Magenta"></HR><BR>
+
+
+'Let's start with: <BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Option Explicit <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+
+'And a variable for the <Font Color="Yellow"> Check-Boxes<Font Color="SpringGreen">.<BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private lngBoxNum  As Long <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR><BR>
+
+'Next we'll add the Constants for the <Font Color="Yellow"> AppendMenu <Font Color="SpringGreen">  Function: <BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const MF_CHECKED As Long = &H8&
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const MF_GRAYED As Long = &H1& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const MF_POPUP As Long = &H10& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const MF_SEPARATOR As Long = &H800& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const MF_STRING As Long = &H0& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR><BR>
+
+'And a couple more for the <Font Color="Yellow"> TrackPopupMenuEx <Font Color="SpringGreen"> Function.<BR>
+
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const TPM_LEFTALIGN As Long = &H0& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const TPM_RETURNCMD As Long = &H100& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3"> Private Const TPM_RIGHTBUTTON As Long = &H2& <Font Color="SpringGreen" Face="Times New Roman" Font Size="4"><BR><BR>
+
+
+'Now we'll set up the POINTAPI which is used in the <Font Color="Yellow"> TrackPopupMenuEx <Font Color="SpringGreen"> Function.<BR>
+<Font Color="Cyan" Face="Courier New" Font Size="3">
+
+Private Type POINTAPI<BR>
+ &nbsp &nbsp lngX &nbsp &nbsp As Long<BR>
+ &nbsp &nbsp lngY &nbsp &nbsp As Long<BR>
+End Type<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+'These are the Menu Functions.<BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+Private Declare Function AppendMenu Lib "user32" Alias "AppendMenuA" (ByVal hMenu As Long, ByVal wFlags As Long, ByVal wIDNewItem As Long, ByVal lpNewItem As Any) As Long<BR>
+Private Declare Function CreatePopupMenu Lib "user32" () As Long<BR>
+Private Declare Function DestroyMenu Lib "user32" (ByVal hMenu As Long) As Long<BR>
+Private Declare Function GetCursorPos Lib "user32" (lpPoint As POINTAPI) As Long<BR>
+Private Declare Function TrackPopupMenuEx Lib "user32" (ByVal hMenu As Long, ByVal wFlags As Long, ByVal X As Long, ByVal Y As Long, ByVal HWnd As Long, ByVal lptpm As Any) As Long<BR><BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+'The rest of the code is all contained in the <Font Color="Yellow"> Form_MouseUp <Font Color="SpringGreen"> Event.
+<BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+Private Sub Form_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single) <BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+'These Dim's are for the <Font Color="Yellow"> TrackPopupMenuEx <Font Color="SpringGreen"> Function: <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+Dim lngTPM &nbsp &nbsp&nbsp As Long<BR>
+Dim pntXorY &nbsp &nbsp As POINTAPI <BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+'Dimension each of the Menu variables. &nbsp The variable will hold the Menu address. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+Dim lngMainMenu &nbsp &nbsp &nbsp &nbsp &nbsp&nbsp As Long<BR>
+Dim lngFirst_Sub_Menu &nbsp &nbsp&nbsp As Long<BR>
+Dim lngSecond_Sub_Menu &nbsp &nbsp As Long<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp Create the Menu addresses. &nbsp The variable contains the address. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp lngMainMenu = CreatePopupMenu()<BR>
+ &nbsp &nbsp lngFirst_Sub_Menu = CreatePopupMenu()<BR>
+ &nbsp &nbsp lngSecond_Sub_Menu = CreatePopupMenu()<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp Save the current Cursor Position. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp GetCursorPos pntXorY<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is the Main-Menu. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_STRING, 1, "This is the..."<BR>
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_CHECKED, 2, "Main Menu"<BR>
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_SEPARATOR, 3, ByVal 0& <BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This <Font Color="Yellow"> MF_POPUP <Font Color="SpringGreen"> is the button that will Popup the Sub-Menu.<BR>
+' &nbsp &nbsp &nbsp It references the Sub-Menu's identifier <Font Color="Yellow"> lngFirst_Sub_Menu<Font Color="SpringGreen">. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_POPUP, lngFirst_Sub_Menu, "More Menus" <BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is the First Sub-Menu. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 4, "This is an example of..."<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_SEPARATOR, 5, ByVal 0&<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This <Font Color="Yellow"> MF_POPUP <Font Color="SpringGreen"> is the button that will Popup the <Font Color="Yellow"> Check-Boxes <Font Color="SpringGreen"> in the <Font Color="Yellow"> Colors <Font Color="SpringGreen"> Sub-Menu.<BR>
+' &nbsp &nbsp &nbsp It references the Sub-Menu's identifier <Font Color="Yellow"> lngSecond_Sub_Menu<Font Color="SpringGreen">. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_POPUP, lngSecond_Sub_Menu, "A Sub Menu w/Checked items..."<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_SEPARATOR, 6, ByVal 0&<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is the <Font Color="Yellow"> Colors <Font Color="SpringGreen"> Sub-Menu w/<Font Color="Yellow">Check-Boxes<Font Color="SpringGreen">. &nbsp These 3 lines replaced 14 lines of code in the original version. &nbsp Please see the code comments for further explanation. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngSecond_Sub_Menu, Hex(Abs(lngBoxNum = 1) * 8), 7, "Red"<BR>
+ &nbsp &nbsp AppendMenu lngSecond_Sub_Menu, Hex(Abs(lngBoxNum = 2) * 8), 8, "Green"<BR>
+ &nbsp &nbsp AppendMenu lngSecond_Sub_Menu, Hex(Abs(lngBoxNum = 3) * 8), 9, "Blue"<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is the rest of the <Font Color="Yellow"> First Sub_Menu<Font Color="SpringGreen">. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 10, "Open the Sub Menu above."<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 11, "Then Click one of the colors."<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 12, "The next time you open it,"<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 13, "your new color will be Checked."<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_SEPARATOR, 14, ByVal 0&<BR>
+ &nbsp &nbsp AppendMenu lngFirst_Sub_Menu, MF_STRING, 15, "Close"<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is the rest of the <Font Color="Yellow"> Main-Menu<Font Color="SpringGreen">. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_SEPARATOR, 16, ByVal 0&<BR>
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_STRING, 17, "The next one is"<BR>
+ &nbsp &nbsp AppendMenu lngMainMenu, MF_GRAYED, 18, "Grayed out."<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp The <Font Color="Yellow"> TrackPopupMenuEx <Font Color="SpringGreen"> function displays a shortcut menu at the specified location and tracks the selection of items on the shortcut menu. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp lngTPM = TrackPopupMenuEx(lngMainMenu, TPM_LEFTALIGN Or TPM_RETURNCMD Or TPM_RIGHTBUTTON, pntXorY.lngX, pntXorY.lngY, Me.HWnd, ByVal 0&)<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp The <Font Color="Yellow"> DestroyMenu <Font Color="SpringGreen"> function destroys the specified menu and frees any memory that the menu occupies. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp DestroyMenu lngMainMenu<BR>
+ &nbsp &nbsp DestroyMenu lngFirst_Sub_Menu<BR>
+ &nbsp &nbsp DestroyMenu lngSecond_Sub_Menu<BR><BR>
+
+ <Font Color="SpringGreen" Face="Times New Roman" Font Size="4">
+
+' &nbsp &nbsp &nbsp This is where you control the Menu buttons. &nbsp This Menu is merely for demonstration purposes so I only included code to handle the <Font Color="Yellow"> Check-Boxes <Font Color="SpringGreen"> and an <Font Color="Yellow"> End <Font Color="SpringGreen"> statement for the Quit button. <BR><Font Color="Cyan" Face="Courier New" Font Size="3">
+
+ &nbsp &nbsp Select Case lngTPM<BR>
+ &nbsp &nbsp &nbsp &nbsp Case 7<BR>
+ &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp lngBoxNum = 1<BR>
+ &nbsp &nbsp &nbsp &nbsp Case 8<BR>
+ &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp lngBoxNum = 2<BR>
+ &nbsp &nbsp &nbsp &nbsp Case 9<BR>
+ &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp lngBoxNum = 3<BR>
+ &nbsp &nbsp &nbsp &nbsp Case 15<BR>
+ &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp End<BR>
+ &nbsp &nbsp End Select  '   lngTPM<BR><BR>
+
+End Sub<BR><BR><BR>
+
+
+<Div Align="Center">
+<P><Font Color="SpringGreen" Face="Times New Roman" Font Size="5">
+ 
+That's it! &nbsp Press <Font Color="Yellow"> Cntl + F5 <Font Color="SpringGreen"> to run the <Font Color="Red"> Cre8Popup <Font Color="SpringGreen"> Menu program.<BR><BR>
+
+</P></Div>
+</Font></Body></HTML>
